@@ -27,7 +27,7 @@ display.setClicksAllowed(true)
 local currentYard = {
     title = "YARD1",
     tracks = {
-        maintrack = {c1 = {0,48,}, c2 = {128,48}},
+        maintrack = {c1 = {0,48}, c2 = {128,48}},
         secondarytrack = {c1 = {25,53}, c2 = {103,53}},
     },
     switches = {
@@ -55,6 +55,7 @@ local currentYard = {
 }
 
 local function updateswitch(switch,position) -- Function that lets us change the *displayed* state of a switch
+    print("updatedswitch")
     for _,pos in pairs(currentYard.switches[switch]) do -- draw all positions as disabled
         display.drawLine(pos.c1[1],pos.c1[2],pos.c2[1],pos.c2[2],SWITCH_REGULAR_COLOR)
     end
@@ -96,24 +97,27 @@ end
 -- SECTION 2 : INTERACTIONS
 ----------------------------
 
-
 local yardInteractions = {
     interactions = {
         switch1I = {
             hitbox = {c1 = {20,48}, c2 = {25,53}},
             state = 1,
             execute = function(self)
+                print("it ran sw1")
                 if self.state == 1 then
+                    print("statewas1")
                     self.state = 2
                     updateswitch("switch1","pos2")
                 else
+                    print("statewasnt1")
                     self.state = 1
                     updateswitch("switch1","pos1")
+
                 end
             end,
         },
         switch2I = {
-            hitbox = {c1 = {}, c2 = {}},
+            hitbox = {c1 = {103,48}, c2 = {108,53}}, -- TODO: Make a hitbox for this dummy
             state = 1,
             execute = function(self)
                 if self.state == 1 then
@@ -128,23 +132,66 @@ local yardInteractions = {
     }
 }
 
+
 local function getinteraction(clickx,clicky)
     for _,interaction in pairs(yardInteractions.interactions) do
         if interaction.hitbox.c1[1] <= clickx and interaction.hitbox.c2[1] >= clickx and interaction.hitbox.c1[2] <= clicky and interaction.hitbox.c2[2] >= clicky then
-            interaction.execute()
+            interaction.execute(interaction)
+        end
+    end
+end
+
+function callback_loop()
+    local click = display.getClick()
+    if click then
+        if click[3] == "pressed" then
+            print("yesclick")
+            print(click[1])
+            print(click[2])
+            getinteraction(click[1],click[2])
+            display.flush()
+        end
+    end
+    display.clearClicks()
+    if _endtick then
+        display.clearClicks()
+        display.clear()
+        display.flush()
+    end
+end
+
+-- CLick Interact Loop
+local function clickInteract()
+    callback_loop()
+end
+
+--------------------
+-- TERMINAL INTERACTION CODE (UNUSED)
+--------------------
+-- The thing i used to get away from my problems has its own problems
+Terminal = getComponents("terminal")[1]
+
+local function terminalInteract()
+    local isRunning = true
+    while isRunning do
+        local inputcommand = Terminal.read()
+        if inputcommand then
+            print("it do")
+            if inputcommand == "list" then
+                Terminal.write("no i wont")
+            end
+            for _,interaction in pairs(yardInteractions.interactions) do
+                if inputcommand == interaction then
+                    interaction.execute()
+                end
+            end
+
         end
     end
 end
 
 -- Contains Testing
 drawYard()
-updateswitch("switch1","pos2")
-updatesignal("signal1","state2")
-getinteraction()
-
-
-local click = display.getClick()
-getinteraction(click[1],click[2])
-
+clickInteract()
 
 display.flush() -- Send Data to Display
