@@ -96,7 +96,6 @@ end
 -- SECTION 2 : INTERACTIONS
 ----------------------------
 
-
 local yardInteractions = {
     interactions = {
         switch1I = {
@@ -140,8 +139,6 @@ end
 drawYard()
 updateswitch("switch1","pos2")
 updatesignal("signal1","state2")
-getinteraction()
-
 
 local click = display.getClick()
 getinteraction(click[1],click[2])
