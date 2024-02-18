@@ -1,15 +1,19 @@
 -- Yard Management System
+-- Made by Atlasim
 -- Made to work with Display: (4x3)u (128x96)px
 
+-- Debug Flags
+DEBUG_CLICK_ECHO = true
 
-
--- color constants
+-- Color Constants
 BACKGROUND_COLOR = "111111"
 TRACK_COLOR = "ffffff"
 SWITCH_ENABLE_COLOR = "ff0000"
 SWITCH_REGULAR_COLOR = "aaaaaa"
 TITLE_COLOR = "ffffff"
 SIGNAL_SCALE = 1
+SIGNAL_COLOR_GREEN = "47ba3a"
+SIGNAL_COLOR_RED = "e63232"
 
 -- Display Initialisation
 local display = getDisplays()[1] -- Get the main display
@@ -23,9 +27,9 @@ display.setClicksAllowed(true)
 -- c# = coordinate number #
 -- Default switch state is always pos1
 -- default signal state is always state1
--- YARD Definition as a table (Kinda like JSON)
+-- YARD Definition as a table (Kinda like JSON but worse)
 local currentYard = {
-    title = "YARD1",
+    title = "Demo Yard 1",
     tracks = {
         maintrack = {c1 = {0,48}, c2 = {128,48}},
         secondarytrack = {c1 = {25,53}, c2 = {103,53}},
@@ -36,26 +40,37 @@ local currentYard = {
     },
     signals = {
         signal1 = {pos = {17,50}, states = {
-            state1 = "47ba3a",
-            state2 = "e63232",
+            state1 = SIGNAL_COLOR_GREEN,
+            state2 = SIGNAL_COLOR_RED,
         }},
         signal2 = {pos = {111,46}, states = {
-            state1 = "47ba3a",
-            state2 = "e63232",
+            state1 = SIGNAL_COLOR_GREEN,
+            state2 = SIGNAL_COLOR_RED,
         }},
         signal3 = {pos = {101,55}, states = {
-            state1 = "47ba3a",
-            state2 = "e63232",
+            state1 = SIGNAL_COLOR_GREEN,
+            state2 = SIGNAL_COLOR_RED,
         }},
         signal4 = {pos = {27,51}, states = {
-            state1 = "47ba3a",
-            state2 = "e63232",
+            state1 = SIGNAL_COLOR_GREEN,
+            state2 = SIGNAL_COLOR_RED,
         }}
+    },
+    textelements = {
+        creditsL1 = {
+            pos = {5,75},
+            text = "Yard Manager Built by",
+            color = TITLE_COLOR
+        },
+        creditsL2 = {
+            pos = {5,83},
+            text = "Atlasim",
+            color = "34b4eb"
+        }
     }
 }
 
 local function updateswitch(switch,position) -- Function that lets us change the *displayed* state of a switch
-    print("updatedswitch")
     for _,pos in pairs(currentYard.switches[switch]) do -- draw all positions as disabled
         display.drawLine(pos.c1[1],pos.c1[2],pos.c2[1],pos.c2[2],SWITCH_REGULAR_COLOR)
     end
@@ -71,8 +86,15 @@ local function updatesignal(signal, state)
 end
 
 local function drawYard() -- Initialisation function to draw the yard
-    -- write title
+    -- Draw title
     display.drawText(5,5,currentYard.title,TITLE_COLOR)
+
+    -- Draw Text Elements
+    if currentYard.textelements then
+        for _,textel in pairs(currentYard.textelements) do
+            display.drawText(textel.pos[1], textel.pos[2], textel.text, textel.color)
+        end
+    end
 
     -- Draw Tracks
     for _,track in pairs(currentYard.tracks) do
@@ -100,16 +122,13 @@ end
 local yardInteractions = {
     interactions = {
         switch1I = {
-            hitbox = {c1 = {20,48}, c2 = {25,53}},
+            hitbox = {c1 = {20,48}, c2 = {25,53}}, -- c1 : Corner1, c2 : Corner2 (of a rectangle hitbox)
             state = 1,
             execute = function(self)
-                print("it ran sw1")
                 if self.state == 1 then
-                    print("statewas1")
                     self.state = 2
                     updateswitch("switch1","pos2")
                 else
-                    print("statewasnt1")
                     self.state = 1
                     updateswitch("switch1","pos1")
 
@@ -117,7 +136,7 @@ local yardInteractions = {
             end,
         },
         switch2I = {
-            hitbox = {c1 = {103,48}, c2 = {108,53}}, -- TODO: Make a hitbox for this dummy
+            hitbox = {c1 = {103,48}, c2 = {108,53}},
             state = 1,
             execute = function(self)
                 if self.state == 1 then
@@ -128,10 +147,62 @@ local yardInteractions = {
                     updateswitch("switch2","pos1")
                 end
             end,
+        },
+        signal1I = {
+            hitbox = {c1 = {16,49}, c2 = {18,51}},
+            state = 1,
+            execute = function(self)
+                if self.state == 1 then
+                    self.state = 2
+                    updatesignal("signal1","state2")
+                else
+                    self.state = 1
+                    updatesignal("signal1","state1")
+                end
+            end
+        },
+        signal2I = {
+            hitbox = {c1 = {110,45}, c2 = {112,47}},
+            state = 1,
+            execute = function (self)
+                if self.state == 1 then
+                    self.state = 2
+                    updatesignal("signal2","state2")
+                else
+                    self.state = 1
+                    updatesignal("signal2","state1")
+                end
+            end
+        },
+        signal3I = {
+            hitbox = {c1 = {100,54}, c2 = {102,56}},
+            state = 1,
+            execute = function (self)
+                if self.state == 1 then
+                    self.state = 2
+                    updatesignal("signal3","state2")
+                else
+                    self.state = 1
+                    updatesignal("signal3","state1")
+                end
+            end
+        },
+        signal4I = {
+            hitbox = {c1 = {26,50}, c2 = {28,52}},
+            state = 1,
+            execute = function (self)
+                if self.state == 1 then
+                    self.state = 2
+                    updatesignal("signal4","state2")
+                else
+                    self.state = 1
+                    updatesignal("signal4","state1")
+                end
+            end
         }
     }
 }
-
+-- TODO: Complete interactions for signals
 
 local function getinteraction(clickx,clicky)
     for _,interaction in pairs(yardInteractions.interactions) do
@@ -141,13 +212,16 @@ local function getinteraction(clickx,clicky)
     end
 end
 
-function callback_loop()
+---@diagnostic disable-next-line: lowercase-global -- Ignore this, it for my IDE
+function callback_loop() -- Click interaction detection function
     local click = display.getClick()
     if click then
         if click[3] == "pressed" then
-            print("yesclick")
-            print(click[1])
-            print(click[2])
+            if DEBUG_CLICK_ECHO == true then
+                print("yesclick")
+                print(click[1])
+                print(click[2])
+            end
             getinteraction(click[1],click[2])
             display.flush()
         end
@@ -171,7 +245,7 @@ end
 -- The thing i used to get away from my problems has its own problems
 Terminal = getComponents("terminal")[1]
 
-local function terminalInteract()
+local function terminalInteract() -- Unused
     local isRunning = true
     while isRunning do
         local inputcommand = Terminal.read()
@@ -189,9 +263,11 @@ local function terminalInteract()
         end
     end
 end
+---------------
 
--- Contains Testing
+-- Main Code
 drawYard()
 clickInteract()
 
 display.flush() -- Send Data to Display
+ 
