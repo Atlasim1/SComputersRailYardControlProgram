@@ -112,7 +112,7 @@ local yardInteractions = {
             end,
         },
         switch2I = {
-            hitbox = {c1 = {}, c2 = {}},
+            hitbox = {c1 = {}, c2 = {}}, -- TODO: Make a hitbox for this dummy
             state = 1,
             execute = function(self)
                 if self.state == 1 then
@@ -127,6 +127,7 @@ local yardInteractions = {
     }
 }
 
+
 local function getinteraction(clickx,clicky)
     for _,interaction in pairs(yardInteractions.interactions) do
         if interaction.hitbox.c1[1] <= clickx and interaction.hitbox.c2[1] >= clickx and interaction.hitbox.c1[2] <= clicky and interaction.hitbox.c2[2] >= clicky then
@@ -135,13 +136,60 @@ local function getinteraction(clickx,clicky)
     end
 end
 
+
+
+-- CLick Interact Loop
+local function clickInteract()
+    display.clearClicks()
+    while true do 
+        local click = display.getClick()
+        if click then 
+            print("yesclick")
+            getinteraction(click[1],click[2])
+        end
+        display.clearClicks()
+        coroutine.yield()
+    end
+end
+
+-- Making coroutine might be useless
+local clickInteractCoroutine = coroutine.create(clickInteract)
+
+-- TODO: Get the clickInteractCoroutine to not do `too long without yielding` when ran, might include having to write my own event handler. Goddammit
+-- ! Or maybe display.getClick() is yeilding and the while loop is unnessesary
+--  Look at this : https://stackoverflow.com/questions/8305248/lua-event-handler
+
+
+
+--------------------
+-- TERMINAL INTERACTION CODE (UNUSED)
+--------------------
+-- The thing i used to get away from my problems has its own problems
+Terminal = getComponents("terminal")[1]
+
+local function terminalInteract()
+    local isRunning = true
+    while isRunning do
+        local inputcommand = Terminal.read()
+        if inputcommand then
+            print("it do")
+            if inputcommand == "list" then
+                Terminal.write("no i wont")
+            end
+            for _,interaction in pairs(yardInteractions.interactions) do
+                if inputcommand == interaction then
+                    interaction.execute()
+                end
+            end
+
+        end
+    end
+end
+
 -- Contains Testing
 drawYard()
 updateswitch("switch1","pos2")
 updatesignal("signal1","state2")
-
-local click = display.getClick()
-getinteraction(click[1],click[2])
 
 
 display.flush() -- Send Data to Display
