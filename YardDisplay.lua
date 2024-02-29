@@ -3,7 +3,7 @@
 -- Made to work with Display: (4x3)u (128x96)px
 
 -- Debug Flags
-DEBUG_CLICK_ECHO = true
+DEBUG_CLICK_ECHO = false
 
 -- Color Constants
 BACKGROUND_COLOR = "111111"
@@ -54,6 +54,10 @@ local currentYard = {
         signal4 = {pos = {27,51}, states = {
             state1 = SIGNAL_COLOR_GREEN,
             state2 = SIGNAL_COLOR_RED,
+        }},
+        lightsignal1 = {pos = {5,48}, states = {
+            state1 = SWITCH_REGULAR_COLOR,
+            state2 = SWITCH_ENABLE_COLOR
         }}
     },
     textelements = {
@@ -128,10 +132,11 @@ local yardInteractions = {
                 if self.state == 1 then
                     self.state = 2
                     updateswitch("switch1","pos2")
+                    setreg("p1",1)
                 else
                     self.state = 1
                     updateswitch("switch1","pos1")
-
+                    setreg("p1",0)
                 end
             end,
         },
@@ -142,9 +147,11 @@ local yardInteractions = {
                 if self.state == 1 then
                     self.state = 2
                     updateswitch("switch2","pos2")
+                    setreg("p2",1)
                 else
                     self.state = 1
                     updateswitch("switch2","pos1")
+                    setreg("p2",0)
                 end
             end,
         },
@@ -155,9 +162,11 @@ local yardInteractions = {
                 if self.state == 1 then
                     self.state = 2
                     updatesignal("signal1","state2")
+                    setreg("s1",0)
                 else
                     self.state = 1
                     updatesignal("signal1","state1")
+                    setreg("s1",1)
                 end
             end
         },
@@ -168,9 +177,11 @@ local yardInteractions = {
                 if self.state == 1 then
                     self.state = 2
                     updatesignal("signal2","state2")
+                    setreg("s2",0)
                 else
                     self.state = 1
                     updatesignal("signal2","state1")
+                    setreg("s2",1)
                 end
             end
         },
@@ -181,9 +192,11 @@ local yardInteractions = {
                 if self.state == 1 then
                     self.state = 2
                     updatesignal("signal3","state2")
+                    setreg("s3",0)
                 else
                     self.state = 1
                     updatesignal("signal3","state1")
+                    setreg("s3",1)
                 end
             end
         },
@@ -194,15 +207,16 @@ local yardInteractions = {
                 if self.state == 1 then
                     self.state = 2
                     updatesignal("signal4","state2")
+                    setreg("s4",0)
                 else
                     self.state = 1
                     updatesignal("signal4","state1")
+                    setreg("s4",1)
                 end
             end
         }
     }
 }
--- TODO: Complete interactions for signals
 
 local function getinteraction(clickx,clicky)
     for _,interaction in pairs(yardInteractions.interactions) do
@@ -212,8 +226,31 @@ local function getinteraction(clickx,clicky)
     end
 end
 
+------------------
+-- 3 : INTERRUPTS / Checks
+------------------
+local yardInterrupts = {
+    traincoming1 = {
+        execute = function ()
+            if getreg("1") == 1 then
+                updatesignal("lightsignal1","state2")
+            else
+                updatesignal("lightsignal1","state1")
+            end
+        end
+    }
+}
+
+
+local function handleInterrupts()
+    for _,interrupt in pairs(yardInterrupts) do
+        interrupt.execute()
+    end
+end
+
 ---@diagnostic disable-next-line: lowercase-global -- Ignore this, it for my IDE
-function callback_loop() -- Click interaction detection function
+function callback_loop() -- Click interaction detection function and main loop
+    handleInterrupts()
     local click = display.getClick()
     if click then
         if click[3] == "pressed" then
