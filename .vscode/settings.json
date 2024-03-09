@@ -1,9 +1,0 @@
-{
-    "Lua.diagnostics.globals": [
-        "getDisplays",
-        "getComponents",
-        "_endtick",
-        "getreg",
-        "setreg"
-    ]
-}
