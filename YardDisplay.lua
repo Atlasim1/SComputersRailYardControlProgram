@@ -1,11 +1,13 @@
 -- Yard Management System
 -- Made by Atlasim
 -- Made to work with Display: (4x3)u (128x96)px
+-- This code is awful
+-- !! Documentation should be in the workshop Item Description (Link to github)
 
 -- Debug Flags
 DEBUG_CLICK_ECHO = false
 
--- Color Constants
+-- Color Constants And Other Flags
 BACKGROUND_COLOR = "111111"
 TRACK_COLOR = "ffffff"
 SWITCH_ENABLE_COLOR = "ff0000"
@@ -27,8 +29,8 @@ display.setClicksAllowed(true)
 -- c# = coordinate number #
 -- Default switch state is always pos1
 -- default signal state is always state1
--- YARD Definition as a table (Kinda like JSON but worse)
-local currentYard = {
+-- YARD Definition as a table
+local currentYard = {  -- Drawing Data
     title = "Demo Yard 1",
     tracks = {
         maintrack = {c1 = {0,48}, c2 = {128,48}},
@@ -123,20 +125,20 @@ end
 -- SECTION 2 : INTERACTIONS
 ----------------------------
 
-local yardInteractions = {
+local yardInteractions = {   -- Interactions Data
     interactions = {
         switch1I = {
             hitbox = {c1 = {20,48}, c2 = {25,53}}, -- c1 : Corner1, c2 : Corner2 (of a rectangle hitbox)
             state = 1,
             execute = function(self)
-                if self.state == 1 then
-                    self.state = 2
-                    updateswitch("switch1","pos2")
-                    setreg("p1",1)
+                if self.state == 1 then  -- For toggle switch
+                    self.state = 2  -- Change internal state
+                    updateswitch("switch1","pos2")  -- change displayed state
+                    setreg("pnt1",1)   -- change logic output for the real switch
                 else
                     self.state = 1
                     updateswitch("switch1","pos1")
-                    setreg("p1",0)
+                    setreg("pnt1",0)
                 end
             end,
         },
@@ -147,11 +149,11 @@ local yardInteractions = {
                 if self.state == 1 then
                     self.state = 2
                     updateswitch("switch2","pos2")
-                    setreg("p2",1)
+                    setreg("pnt2",1)
                 else
                     self.state = 1
                     updateswitch("switch2","pos1")
-                    setreg("p2",0)
+                    setreg("pnt2",0)
                 end
             end,
         },
@@ -162,11 +164,11 @@ local yardInteractions = {
                 if self.state == 1 then
                     self.state = 2
                     updatesignal("signal1","state2")
-                    setreg("s1",0)
+                    setreg("sig1",0)
                 else
                     self.state = 1
                     updatesignal("signal1","state1")
-                    setreg("s1",1)
+                    setreg("sig1",1)
                 end
             end
         },
@@ -177,11 +179,11 @@ local yardInteractions = {
                 if self.state == 1 then
                     self.state = 2
                     updatesignal("signal2","state2")
-                    setreg("s2",0)
+                    setreg("sig2",0)
                 else
                     self.state = 1
                     updatesignal("signal2","state1")
-                    setreg("s2",1)
+                    setreg("sig2",1)
                 end
             end
         },
@@ -192,11 +194,11 @@ local yardInteractions = {
                 if self.state == 1 then
                     self.state = 2
                     updatesignal("signal3","state2")
-                    setreg("s3",0)
+                    setreg("sig3",0)
                 else
                     self.state = 1
                     updatesignal("signal3","state1")
-                    setreg("s3",1)
+                    setreg("sig3",1)
                 end
             end
         },
@@ -207,17 +209,17 @@ local yardInteractions = {
                 if self.state == 1 then
                     self.state = 2
                     updatesignal("signal4","state2")
-                    setreg("s4",0)
+                    setreg("sig4",0)
                 else
                     self.state = 1
                     updatesignal("signal4","state1")
-                    setreg("s4",1)
+                    setreg("sig4",1)
                 end
             end
         }
     }
 }
-
+-- FUNCTION TO GET INTERACTIONS
 local function getinteraction(clickx,clicky)
     for _,interaction in pairs(yardInteractions.interactions) do
         if interaction.hitbox.c1[1] <= clickx and interaction.hitbox.c2[1] >= clickx and interaction.hitbox.c1[2] <= clicky and interaction.hitbox.c2[2] >= clicky then
@@ -229,6 +231,7 @@ end
 ------------------
 -- 3 : INTERRUPTS / Checks
 ------------------
+-- !! NOT SUPPORTED !! 
 local yardInterrupts = {
     traincoming1 = {
         execute = function ()
