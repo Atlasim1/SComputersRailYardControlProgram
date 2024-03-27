@@ -231,7 +231,6 @@ end
 ------------------
 -- 3 : INTERRUPTS / Checks
 ------------------
--- !! NOT SUPPORTED !! 
 local yardInterrupts = {
     traincoming1 = {
         execute = function ()
@@ -254,6 +253,7 @@ end
 ---@diagnostic disable-next-line: lowercase-global -- Ignore this, it for my IDE
 function callback_loop() -- Click interaction detection function and main loop
     handleInterrupts()
+    display.flush()
     local click = display.getClick()
     if click then
         if click[3] == "pressed" then
